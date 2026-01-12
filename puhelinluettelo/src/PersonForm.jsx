@@ -1,0 +1,20 @@
+import React from "react";
+
+const PersonForm = ({newName, handleNameChange, newNumber, handleNumberChange, handleSubmit}) => {
+    return (
+        <form onSubmit={handleSubmit}>
+            <h2>Add new entry</h2>
+            <div>
+                name: <input value={newName} onChange={handleNameChange}/>
+            </div>
+            <div>
+                number: <input value={newNumber} onChange={handleNumberChange}/>
+            </div>
+            <div>
+                <button type="submit">add</button>
+            </div>
+        </form>
+    );
+};
+
+export default PersonForm;

@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev:kurssitiedot": "vite kurssitiedot --port 8000"
+    "dev:kurssitiedot": "vite kurssitiedot --port 8000",
+    "dev:puhelinluettelo": "vite puhelinluettelo --port 8001"
   },
   "dependencies": {
     "node": "^24.12.0",
