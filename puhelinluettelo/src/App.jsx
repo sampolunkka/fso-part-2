@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {use, useEffect} from 'react';
+import axios from 'axios';
 import {useState} from 'react';
 import Phonebook from "./Phonebook.jsx";
 import PersonForm from "./PersonForm.jsx";
@@ -17,19 +18,20 @@ const nameNormalizedIsUniqueInCollection = (name, persons) => {
 };
 
 const App = () => {
-    const [persons, setPersons] = useState([
-        {name: 'Arto Hellas', number: '010-1234567'},
-        {name: 'Aaro Hellas', number: '020-1234567'},
-        {name: 'Armo Heppas', number: '030-1234567'},
-        {name: 'Aatu Hekkas', number: '040-1234567'},
-        {name: 'Arvo Pallas', number: '050-1234567'},
-        {name: 'Arno-Aatu Hella', number: '060-1234567'},
-        {name: 'Aapo Hölli', number: '070-1234567'},
-    ]);
-    const [filteredPersons, setFilteredPersons] = useState(persons);
+    const [persons, setPersons] = useState([]);
+    const [filteredPersons, setFilteredPersons] = useState([]);
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
     const [filter, setFilter] = useState('');
+
+    useEffect(() => {
+        axios
+            .get('http://localhost:3001/persons')
+            .then(response => {
+                setPersons(response.data);
+                setFilteredPersons(response.data);
+            });
+    }, []);
 
     const handleNameChange = (event) => {
         setNewName(event.target.value);
@@ -46,6 +48,7 @@ const App = () => {
                 const personNameNormalized = normalizeName(person.name);
                 return personNameNormalized.includes(filterNormalized);
             });
+            console.log(filteredPersons);
             setFilteredPersons(filteredPersons);
         } else {
             setFilteredPersons(personsArray);
