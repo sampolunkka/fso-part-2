@@ -29,6 +29,7 @@ const App = () => {
     const [filteredPersons, setFilteredPersons] = useState(persons);
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
+    const [filter, setFilter] = useState('');
 
     const handleNameChange = (event) => {
         setNewName(event.target.value);
@@ -38,25 +39,33 @@ const App = () => {
         setNewNumber(event.target.value);
     };
 
-    const handleFilterChange = (event) => {
-        const filterNormalized = normalizeName(event.target.value);
+    const refreshFilteredPersons = (personsArray, filterString) => {
+        const filterNormalized = normalizeName(filterString);
         if (filterNormalized.length) {
-            const filteredPersons = persons.filter(person => {
+            const filteredPersons = personsArray.filter(person => {
                 const personNameNormalized = normalizeName(person.name);
                 return personNameNormalized.includes(filterNormalized);
             });
             setFilteredPersons(filteredPersons);
         } else {
-            setFilteredPersons(persons);
+            setFilteredPersons(personsArray);
         }
+    }
+
+    const handleFilterChange = (event) => {
+        const newFilter = event.target.value;
+        setFilter(newFilter);
+        refreshFilteredPersons(persons, newFilter);
     };
 
     const handleSubmit = (event) => {
         event.preventDefault();
         if (nameNormalizedIsUniqueInCollection(newName, persons)) {
-            setPersons(persons.concat({name: newName, number: newNumber}));
+            const newPersons = persons.concat({name: newName, number: newNumber});
+            setPersons(newPersons);
             setNewName('');
             setNewNumber('');
+            refreshFilteredPersons(newPersons, filter);
         } else {
             alert(`${newName} is already added to phonebook`);
         }
@@ -67,6 +76,7 @@ const App = () => {
             <h1>Phonebook</h1>
             <h2>Filter entries</h2>
             <SearchFilter handleFilterChange={handleFilterChange}/>
+            <h2>Add new entry</h2>
             <PersonForm
                 handleSubmit={handleSubmit}
                 newName={newName}
@@ -74,7 +84,7 @@ const App = () => {
                 newNumber={newNumber}
                 handleNumberChange={handleNumberChange}
             />
-            <h2>Numbers</h2>
+            <h2>Entries</h2>
             <Phonebook persons={filteredPersons}/>
         </div>
     );
