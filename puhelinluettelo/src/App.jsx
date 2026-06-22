@@ -3,7 +3,17 @@ import {useState} from 'react';
 import Phonebook from "./Phonebook.jsx";
 import PersonForm from "./PersonForm.jsx";
 import SearchFilter from "./SearchFilter.jsx";
+import Notification, {NotificationType} from "./Notification.jsx";
 import restClient from "./services/restClient.jsx";
+
+const SUCCESS_CREATE_MESSAGE = (name) => `Added ${name}`;
+const SUCCESS_UPDATE_MESSAGE = (name) => `Updated ${name}`;
+const SUCCESS_DELETE_MESSAGE = (name) => `Deleted ${name}`;
+const ERROR_CREATE_MESSAGE = 'Error creating person';
+const ERROR_UPDATE_MESSAGE = 'Error updating person';
+const ERROR_DELETE_MESSAGE = 'Error deleting person';
+const ERROR_DELETE_NOT_FOUND_MESSAGE = (name) => `Information of ${name} has already been removed from server`;
+const ERROR_FETCH_MESSAGE = 'Error fetching persons';
 
 // In the example all strings are case-sensitive and not trimmed.
 // In this implementation, names are normalized byt the following function,
@@ -23,6 +33,8 @@ const App = () => {
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
     const [filter, setFilter] = useState('');
+    const [errorMessage, setNotificationMessage] = useState(null);
+    const [notificationType, setNotificationType] = useState(null);
 
     const refreshFilteredPersons = (personsArray, filterString) => {
         const filterNormalized = normalizeName(filterString);
@@ -44,7 +56,8 @@ const App = () => {
                 setPersons(response.data);
                 refreshFilteredPersons(response.data, filter);
                 return response;
-            }).catch(error => console.log(`Error fetching persons: ${error}`));
+            })
+            .catch(() => handleNotification(ERROR_FETCH_MESSAGE, NotificationType.ERROR));
     }
 
     useEffect(() => {
@@ -59,7 +72,8 @@ const App = () => {
                 setNewName('');
                 setNewNumber('');
                 refreshFilteredPersons(newPersons, filter);
-            }).catch(error => console.log(`Error creating person: ${error}`));
+                handleNotification(SUCCESS_CREATE_MESSAGE(person.name), NotificationType.SUCCESS);
+            }).catch(() => handleNotification(ERROR_CREATE_MESSAGE, NotificationType.ERROR));
     }
 
     const handleNameChange = (event) => {
@@ -102,8 +116,8 @@ const App = () => {
                     refreshFilteredPersons(updatedCollection, filter);
                     setNewName('');
                     setNewNumber('');
-                })
-                .catch(error => console.log(`Error updating person: ${error}`));
+                    handleNotification(SUCCESS_UPDATE_MESSAGE(updatedPerson.name), NotificationType.SUCCESS);
+                }).catch(() => handleNotification(ERROR_UPDATE_MESSAGE, NotificationType.ERROR));
         } else {
             postPerson({ name: newName, number: newNumber });
         }
@@ -112,13 +126,26 @@ const App = () => {
     const handleDelete = (person) => {
         if (!window.confirm(`Delete ${person.name}?`)) return;
         restClient.remove(person.id)
-            .then(() => getAllPersons())
-            .catch(error => console.log(`Error deleting person: ${error}`));
+            .then(() => handleNotification(SUCCESS_DELETE_MESSAGE(person.name), NotificationType.SUCCESS))
+            .catch(error => { error.response?.status === 404
+                    ? handleNotification(ERROR_DELETE_NOT_FOUND_MESSAGE(person.name), NotificationType.ERROR)
+                    : handleNotification(ERROR_DELETE_MESSAGE, NotificationType.ERROR);
+            }).finally(getAllPersons);
+    }
+
+    const handleNotification = (message, type) => {
+        setNotificationMessage(message);
+        setNotificationType(type);
+        setTimeout(() => {
+            setNotificationMessage(null);
+            setNotificationType(null);
+        }, 5000);
     }
 
     return (
         <div>
             <h1>Phonebook</h1>
+            <Notification message={errorMessage} type={notificationType}/>
             <h2>Filter entries</h2>
             <SearchFilter handleFilterChange={handleFilterChange}/>
             <h2>Add new entry</h2>
