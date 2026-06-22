@@ -1,9 +1,9 @@
-import React, {use, useEffect} from 'react';
-import axios from 'axios';
+import React, {useEffect} from 'react';
 import {useState} from 'react';
 import Phonebook from "./Phonebook.jsx";
 import PersonForm from "./PersonForm.jsx";
 import SearchFilter from "./SearchFilter.jsx";
+import restClient from "./restClient.jsx";
 
 // In the example all strings are case-sensitive and not trimmed.
 // In this implementation, names are normalized byt the following function,
@@ -24,23 +24,6 @@ const App = () => {
     const [newNumber, setNewNumber] = useState('');
     const [filter, setFilter] = useState('');
 
-    useEffect(() => {
-        axios
-            .get('http://localhost:3001/persons')
-            .then(response => {
-                setPersons(response.data);
-                setFilteredPersons(response.data);
-            });
-    }, []);
-
-    const handleNameChange = (event) => {
-        setNewName(event.target.value);
-    };
-
-    const handleNumberChange = (event) => {
-        setNewNumber(event.target.value);
-    };
-
     const refreshFilteredPersons = (personsArray, filterString) => {
         const filterNormalized = normalizeName(filterString);
         if (filterNormalized.length) {
@@ -55,6 +38,38 @@ const App = () => {
         }
     }
 
+    const getAllPersons = () => {
+        return restClient.getAll()
+            .then(response => {
+                setPersons(response.data);
+                refreshFilteredPersons(response.data, filter);
+                return response;
+            }).catch(error => console.log(`Error fetching persons: ${error}`));
+    }
+
+    useEffect(() => {
+        getAllPersons();
+    }, []);
+
+    const postPerson = (person) => {
+        return restClient.create(person)
+            .then(response => {
+                const newPersons = persons.concat(response.data);
+                setPersons(newPersons);
+                setNewName('');
+                setNewNumber('');
+                refreshFilteredPersons(newPersons, filter);
+            }).catch(error => console.log(`Error creating person: ${error}`));
+    }
+
+    const handleNameChange = (event) => {
+        setNewName(event.target.value);
+    };
+
+    const handleNumberChange = (event) => {
+        setNewNumber(event.target.value);
+    };
+
     const handleFilterChange = (event) => {
         const newFilter = event.target.value;
         setFilter(newFilter);
@@ -63,16 +78,43 @@ const App = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        if (nameNormalizedIsUniqueInCollection(newName, persons)) {
-            const newPersons = persons.concat({name: newName, number: newNumber});
-            setPersons(newPersons);
-            setNewName('');
-            setNewNumber('');
-            refreshFilteredPersons(newPersons, filter);
+
+        const isUnique = nameNormalizedIsUniqueInCollection(newName, persons);
+
+        if (!isUnique) {
+            const existingPerson = persons.find(person =>
+                normalizeName(person.name) === normalizeName(newName)
+            );
+
+            if (!window.confirm(`${newName} is already in the phonebook. Replace the number?`)) {
+                return;
+            }
+
+            const updatedPerson = { ...existingPerson, number: newNumber };
+
+            restClient.update(existingPerson.id, updatedPerson)
+                .then(response => {
+                    // Update state with fresh data
+                    const updatedCollection = persons.map(person =>
+                        person.id === existingPerson.id ? response.data : person
+                    );
+                    setPersons(updatedCollection);
+                    refreshFilteredPersons(updatedCollection, filter);
+                    setNewName('');
+                    setNewNumber('');
+                })
+                .catch(error => console.log(`Error updating person: ${error}`));
         } else {
-            alert(`${newName} is already added to phonebook`);
+            postPerson({ name: newName, number: newNumber });
         }
     };
+
+    const handleDelete = (person) => {
+        if (!window.confirm(`Delete ${person.name}?`)) return;
+        restClient.remove(person.id)
+            .then(() => getAllPersons())
+            .catch(error => console.log(`Error deleting person: ${error}`));
+    }
 
     return (
         <div>
@@ -88,7 +130,10 @@ const App = () => {
                 handleNumberChange={handleNumberChange}
             />
             <h2>Entries</h2>
-            <Phonebook persons={filteredPersons}/>
+            <Phonebook
+                persons={filteredPersons}
+                handleDelete={handleDelete}
+            />
         </div>
     );
 };

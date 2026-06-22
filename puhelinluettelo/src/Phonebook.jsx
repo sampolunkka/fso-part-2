@@ -1,16 +1,25 @@
 import React from "react";
 
-const PhonebookEntry = ({person}) => {
+const PhonebookRow = ({person, onDelete}) => {
     return (
-        <p>{person.name} {person.number}</p>
+        <div>
+            {person.name} {person.number}&nbsp;
+            <button
+                onClick={() => onDelete(person)}>delete
+            </button>
+        </div>
     );
 };
 
-const Phonebook = ({persons}) => {
+const Phonebook = ({persons, handleDelete}) => {
     return (
         <div>
             {persons.map((person, index) =>
-                <PhonebookEntry key={index} person={person}/>
+                <PhonebookRow
+                    key={index}
+                    person={person}
+                    onDelete={handleDelete}
+                />
             )}
         </div>
     );
