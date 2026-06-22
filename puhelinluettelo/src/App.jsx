@@ -3,7 +3,7 @@ import {useState} from 'react';
 import Phonebook from "./Phonebook.jsx";
 import PersonForm from "./PersonForm.jsx";
 import SearchFilter from "./SearchFilter.jsx";
-import restClient from "./restClient.jsx";
+import restClient from "./services/restClient.jsx";
 
 // In the example all strings are case-sensitive and not trimmed.
 // In this implementation, names are normalized byt the following function,
