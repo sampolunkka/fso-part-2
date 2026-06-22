@@ -6,6 +6,7 @@
   "scripts": {
     "dev:kurssitiedot": "vite kurssitiedot --port 8000",
     "dev:puhelinluettelo": "vite puhelinluettelo --port 8001",
+    "dev:maatiedot": "vite maatiedot --port 8002",
     "server": "json-server -p 3001 db.json"
   },
   "dependencies": {

@@ -6,7 +6,7 @@ const getAll = () => {
         .then(response => response)
         .catch(error => {
             console.log(`Error fetching persons: ${error}`);
-            throw error; // Rethrow the error
+            throw error;
         });
 };
 
@@ -15,7 +15,7 @@ const create = (newPerson) => {
         .then(response => response)
         .catch(error => {
             console.log(`Error creating person: ${error}`);
-            throw error; // Rethrow the error
+            throw error;
         });
 };
 
@@ -24,7 +24,7 @@ const update = (id, updatedPerson) => {
         .then(response => response)
         .catch(error => {
             console.log(`Error updating person: ${error}`);
-            throw error; // Rethrow the error
+            throw error;
         });
 };
 
@@ -33,7 +33,7 @@ const remove = (id) => {
         .then(response => response)
         .catch(error => {
             console.log(`Error deleting person: ${error}`);
-            throw error; // Rethrow the error
+            throw error;
         });
 };
 
@@ -42,7 +42,7 @@ const getById = (id) => {
         .then(response => response)
         .catch(error => {
             console.log(`Error fetching person by id: ${error}`);
-            throw error; // Rethrow the error
+            throw error;
         });
 }
 
