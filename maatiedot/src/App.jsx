@@ -55,7 +55,7 @@ const App = () => {
         return countriesClient.getAll()
             .then((response) => {
                 setCountries(response.data);
-                setFilteredCountries(response.data); // Initialize with all countries
+                setFilteredCountries(response.data);
             });
     }
 
