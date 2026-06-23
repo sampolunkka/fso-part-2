@@ -11,13 +11,4 @@ const getAll = () => {
         });
 };
 
-const getByName = (name) => {
-    return axios.get(`${baseUrl}name/${name}`)
-        .then(response => response)
-        .catch(error => {
-            console.log(`Error fetching country by name: ${error}`);
-            throw error;
-        });
-};
-
 export default { getAll };
